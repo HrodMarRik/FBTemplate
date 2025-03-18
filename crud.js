@@ -30,15 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let ingredientRowCounter = 1;
     
     // Gestion des onglets du formulaire
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-            showTab(tabId);
-        });
-    });
-    
     function showTab(tabId) {
         // Cacher tous les contenus d'onglets
         document.querySelectorAll('.tab-content').forEach(tab => {
@@ -51,11 +42,65 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Afficher le contenu de l'onglet sélectionné
-        document.getElementById(tabId).style.display = 'block';
+        const tabContent = document.getElementById(tabId);
+        if (tabContent) {
+            tabContent.style.display = 'block';
+        }
         
         // Activer le bouton d'onglet correspondant
-        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (tabButton) {
+            tabButton.classList.add('active');
+        }
+        
+        // Mettre à jour l'indicateur
+        updateTabIndicator();
     }
+    
+    // Mettre à jour l'indicateur d'onglet
+    function updateTabIndicator() {
+        const activeTab = document.querySelector('.tab-btn.active');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        
+        if (activeTab && tabIndicator) {
+            tabIndicator.style.width = `${activeTab.offsetWidth}px`;
+            tabIndicator.style.left = `${activeTab.offsetLeft}px`;
+        }
+    }
+    
+    // Initialiser l'indicateur d'onglet
+    function initTabIndicator() {
+        const tabsNavigation = document.querySelector('.tabs-navigation');
+        if (!tabsNavigation) return;
+        
+        // Vérifier si l'indicateur existe déjà
+        let tabIndicator = document.querySelector('.tab-indicator');
+        
+        // Créer l'indicateur s'il n'existe pas
+        if (!tabIndicator) {
+            tabIndicator = document.createElement('div');
+            tabIndicator.className = 'tab-indicator';
+            tabsNavigation.appendChild(tabIndicator);
+        }
+        
+        // Positionner l'indicateur sous le premier onglet actif
+        updateTabIndicator();
+    }
+    
+    // Ajouter les écouteurs d'événements pour les onglets
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            showTab(tabId);
+        });
+    });
+    
+    // Initialiser l'indicateur d'onglet
+    initTabIndicator();
+    
+    // Gérer le redimensionnement de la fenêtre
+    window.addEventListener('resize', updateTabIndicator);
     
     // Afficher le formulaire d'ajout d'ingrédient
     if (addIngredientBtn) {
@@ -84,51 +129,53 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('productId').value = '';
             
             // Réinitialiser la liste d'ingrédients
-            ingredientsList.innerHTML = `
-                <div class="ingredient-row">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ingredient-1">Matière première</label>
-                            <select id="ingredient-1" name="ingredients[]" required class="ingredient-select">
-                                <option value="" disabled selected>Sélectionner une matière première</option>
-                                <option value="FAR001">Farine de blé T65</option>
-                                <option value="FAR002">Farine de tradition française</option>
-                                <option value="BEU001">Beurre AOP Charentes-Poitou</option>
-                                <option value="SUC001">Sucre cristal</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="quantity-1">Quantité</label>
-                            <input type="number" id="quantity-1" name="quantities[]" min="0.01" step="0.01" required class="ingredient-quantity">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="unit-1">Unité</label>
-                            <input type="text" id="unit-1" name="units[]" readonly class="ingredient-unit">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="cost-1">Coût</label>
-                            <input type="text" id="cost-1" name="costs[]" readonly class="ingredient-cost">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="baker-percentage-1">% boulanger</label>
-                            <input type="text" id="baker-percentage-1" name="bakerPercentages[]" readonly class="baker-percentage">
-                        </div>
-                        
-                        <div class="form-group ingredient-actions">
-                            <button type="button" class="button button--icon remove-ingredient" style="display: none;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
+            if (ingredientsList) {
+                ingredientsList.innerHTML = `
+                    <div class="ingredient-row">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ingredient-1">Matière première</label>
+                                <select id="ingredient-1" name="ingredients[]" required class="ingredient-select">
+                                    <option value="" disabled selected>Sélectionner une matière première</option>
+                                    <option value="FAR001">Farine de blé T65</option>
+                                    <option value="FAR002">Farine de tradition française</option>
+                                    <option value="BEU001">Beurre AOP Charentes-Poitou</option>
+                                    <option value="SUC001">Sucre cristal</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quantity-1">Quantité</label>
+                                <input type="number" id="quantity-1" name="quantities[]" min="0.01" step="0.01" required class="ingredient-quantity">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="unit-1">Unité</label>
+                                <input type="text" id="unit-1" name="units[]" readonly class="ingredient-unit">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cost-1">Coût</label>
+                                <input type="text" id="cost-1" name="costs[]" readonly class="ingredient-cost">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="baker-percentage-1">% boulanger</label>
+                                <input type="text" id="baker-percentage-1" name="bakerPercentages[]" readonly class="baker-percentage">
+                            </div>
+                            
+                            <div class="form-group ingredient-actions">
+                                <button type="button" class="button button--icon remove-ingredient" style="display: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
             
             ingredientRowCounter = 1;
             productFormTitle.textContent = 'Créer une recette';
@@ -375,9 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('productActualMargin').value = actualMargin.toFixed(1) + '%';
         }
     }
-    
-    // Initialiser les écouteurs d'événements
-    setupIngredientListeners();
     
     // Écouter les changements sur les champs de coûts
     document.getElementById('productLaborTime').addEventListener('input', function() {
