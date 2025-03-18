@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galerie d'images</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Style pour la galerie et les éléments */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+        
+        .gallery-item-container {
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .gallery-item-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            height: 350px; /* Hauteur fixe pour tous les éléments */
+            overflow: hidden;
+            background-color: white;
+            border: none; /* Suppression du contour */
+            outline: none; /* Suppression du contour au focus */
+        }
+        
+        .gallery-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .caption {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .caption h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #333;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .caption p {
+            margin: 5px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .price {
+            font-weight: bold;
+            color: #e63946;
+            margin: 5px 0;
+            font-size: 1.1em;
+        }
+        
+        .ref {
+            font-size: 0.85em;
+            color: #777;
+            margin-top: auto;
+        }
+        
+        /* Style pour masquer/afficher le panneau d'ingrédients */
+        .ingredients-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+        
+        .gallery-item.show-ingredients .ingredients-panel {
+            display: flex;
+        }
+        
+        .ingredients-header {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .ingredients-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ingredients {
+            overflow-y: auto;
+        }
+        
+        .ingredient-title {
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #555;
+        }
+        
+        .ingredients ul {
+            list-style-type: none;
+            padding-left: 5px;
+            margin: 0;
+        }
+        
+        .ingredients li {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ingredients li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #e63946;
+        }
+        
+        /* Style pour le bouton Utiliser */
+        .use-recipe-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            letter-spacing: 0.5px;
+        }
+        
+        .use-recipe-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* Style pour l'image par défaut */
+        .gallery-item img.default-img {
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-corner">
+        <a href="index.html">
+            <img src="images/logo.svg" alt="Logo de l'entreprise" class="nav-logo">
+        </a>
+    </div>
+
+    <nav class="top-navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="gallery.html">Galerie</a></li>
+                <li><a href="products.html">Produits</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="profile-section">
+                <img src="images/profile-avatar.jpg" alt="PP" class="profile-avatar">
+                <span>Jean Dupont</span>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="side-navbar">
+        <ul class="side-menu">
+            <li><a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Dashboard</a></li>
+            <li><a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>Éditer</a></li>
+            <li><a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Messages</a></li>
+            <li><a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Paramètres</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <div class="gallery">
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12345">
+                    <div class="gallery-content">
+                        <img src="images/chocolate-cake.jpg" alt="Gâteau au chocolat">
+                        <div class="caption">
+                            <h3>Gâteau au chocolat</h3>
+                            <p class="price">12,99 €</p>
+                            <p class="ref">Réf: PRD12345</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Gâteau au chocolat</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Chocolat noir (200g)</li>
+                                <li>Farine (150g)</li>
+                                <li>Sucre (100g)</li>
+                                <li>Beurre (120g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12345" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12346">
+                    <div class="gallery-content">
+                        <img src="images/apple-pie.jpg" alt="Tarte aux pommes">
+                        <div class="caption">
+                            <h3>Tarte aux pommes</h3>
+                            <p class="price">14,50 €</p>
+                            <p class="ref">Réf: PRD12346</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Tarte aux pommes</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Pommes (500g)</li>
+                                <li>Pâte brisée (1)</li>
+                                <li>Sucre (80g)</li>
+                                <li>Cannelle (5g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12346" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12347">
+                    <div class="gallery-content">
+                        <img src="images/sourdough-bread.jpg" alt="Pain au levain">
+                        <div class="caption">
+                            <h3>Pain au levain</h3>
+                            <p class="price">4,99 €</p>
+                            <p class="ref">Réf: PRD12347</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Pain au levain</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Farine T65 (500g)</li>
+                                <li>Levain (100g)</li>
+                                <li>Eau (350ml)</li>
+                                <li>Sel (10g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12347" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12348">
+                    <div class="gallery-content">
+                        <img src="images/chocolate-cookies.jpg" alt="Cookies aux pépites de chocolat">
+                        <div class="caption">
+                            <h3>Cookies aux pépites de chocolat</h3>
+                            <p class="price">8,99 €</p>
+                            <p class="ref">Réf: PRD12348</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Cookies aux pépites de chocolat</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Farine (250g)</li>
+                                <li>Pépites de chocolat (150g)</li>
+                                <li>Beurre (120g)</li>
+                                <li>Sucre brun (100g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12348" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12349">
+                    <div class="gallery-content">
+                        <img src="images/croissants.jpg" alt="Croissants">
+                        <div class="caption">
+                            <h3>Croissants</h3>
+                            <p class="price">10,50 €</p>
+                            <p class="ref">Réf: PRD12349</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Croissants</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Farine (300g)</li>
+                                <li>Beurre (200g)</li>
+                                <li>Levure (15g)</li>
+                                <li>Lait (120ml)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12349" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12350">
+                    <div class="gallery-content">
+                        <img src="images/macarons.jpg" alt="Macarons">
+                        <div class="caption">
+                            <h3>Macarons</h3>
+                            <p class="price">16,99 €</p>
+                            <p class="ref">Réf: PRD12350</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Macarons</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Poudre d'amande (150g)</li>
+                                <li>Sucre glace (150g)</li>
+                                <li>Blancs d'œufs (100g)</li>
+                                <li>Colorant alimentaire (5g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12350" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12351">
+                    <div class="gallery-content">
+                        <img src="images/coffee-eclair.jpg" alt="Éclair au café">
+                        <div class="caption">
+                            <h3>Éclair au café</h3>
+                            <p class="price">5,99 €</p>
+                            <p class="ref">Réf: PRD12351</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Éclair au café</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Pâte à choux (200g)</li>
+                                <li>Crème pâtissière (150g)</li>
+                                <li>Extrait de café (15ml)</li>
+                                <li>Fondant (50g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12351" class="use-recipe-btn">Utiliser</a>
+            </div>
+            
+            <div class="gallery-item-container">
+                <div class="gallery-item" data-recipe-id="PRD12352">
+                    <div class="gallery-content">
+                        <img src="images/brioche.jpg" alt="Brioche">
+                        <div class="caption">
+                            <h3>Brioche</h3>
+                            <p class="price">7,50 €</p>
+                            <p class="ref">Réf: PRD12352</p>
+                        </div>
+                    </div>
+                    <div class="ingredients-panel">
+                        <div class="ingredients-header">
+                            <h3>Brioche</h3>
+                        </div>
+                        <div class="ingredients">
+                            <p class="ingredient-title">Ingrédients:</p>
+                            <ul>
+                                <li>Farine (300g)</li>
+                                <li>Beurre (150g)</li>
+                                <li>Œufs (3)</li>
+                                <li>Sucre (50g)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="recipe-details.html?id=PRD12352" class="use-recipe-btn">Utiliser</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des images par défaut
+            const galleryImages = document.querySelectorAll('.gallery-item img');
+            
+            galleryImages.forEach(img => {
+                img.onerror = function() {
+                    // Remplacer par l'image par défaut
+                    this.src = 'images/default-recipe.svg';
+                    this.classList.add('default-img');
+                    
+                    // Si l'image par défaut n'existe pas non plus, afficher une icône en CSS
+                    this.onerror = function() {
+                        this.src = '';
+                        this.classList.add('default-img');
+                        // Aucun texte, juste un fond de couleur
+                        this.style.backgroundColor = '#f5f5f5';
+                    }
+                };
+            });
+            
+            // Sélectionner tous les éléments de la galerie
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            
+            // Ajouter un écouteur d'événement à chaque élément de la galerie
+            galleryItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Basculer la classe show-ingredients
+                    this.classList.toggle('show-ingredients');
+                    console.log('Basculement des ingrédients pour:', this);
+                });
+            });
+
+            // Vérification de débogage
+            console.log('Nombre d\'éléments de galerie:', galleryItems.length);
+            
+            // S'assurer que tous les panneaux sont masqués au chargement
+            galleryItems.forEach(item => {
+                item.classList.remove('show-ingredients');
+            });
+        });
+    </script>
+</body>
+</html>
