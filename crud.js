@@ -29,14 +29,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Compteur pour les nouvelles lignes d'ingrédients
     let ingredientRowCounter = 1;
     
-    // Gestion des modales
-    setupModals();
+    // Gestion des onglets du formulaire
+    const tabButtons = document.querySelectorAll('.tab-btn');
     
-    // Gestion des formulaires
-    setupForms();
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            showTab(tabId);
+        });
+    });
     
-    // Gestion des ingrédients dans le formulaire de produit
-    setupIngredientRows();
+    function showTab(tabId) {
+        // Cacher tous les contenus d'onglets
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // Désactiver tous les boutons d'onglets
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Afficher le contenu de l'onglet sélectionné
+        document.getElementById(tabId).style.display = 'block';
+        
+        // Activer le bouton d'onglet correspondant
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    }
     
     // Afficher le formulaire d'ajout d'ingrédient
     if (addIngredientBtn) {
@@ -44,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Réinitialiser le formulaire
             crudIngredientForm.reset();
             document.getElementById('ingredientId').value = '';
-            ingredientFormTitle.textContent = 'Ajouter un ingrédient';
+            ingredientFormTitle.textContent = 'Ajouter une matière première';
             ingredientForm.style.display = 'block';
             window.scrollTo({ top: ingredientForm.offsetTop - 20, behavior: 'smooth' });
         });
@@ -69,19 +88,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="ingredient-row">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="ingredient-1">Ingrédient</label>
-                            <select id="ingredient-1" name="ingredients[]" required>
-                                <option value="" disabled selected>Sélectionner un ingrédient</option>
-                                <option value="1">Farine de blé</option>
-                                <option value="2">Sucre</option>
-                                <option value="3">Lait entier</option>
-                                <option value="4">Fraises</option>
+                            <label for="ingredient-1">Matière première</label>
+                            <select id="ingredient-1" name="ingredients[]" required class="ingredient-select">
+                                <option value="" disabled selected>Sélectionner une matière première</option>
+                                <option value="FAR001">Farine de blé T65</option>
+                                <option value="FAR002">Farine de tradition française</option>
+                                <option value="BEU001">Beurre AOP Charentes-Poitou</option>
+                                <option value="SUC001">Sucre cristal</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label for="quantity-1">Quantité</label>
-                            <input type="number" id="quantity-1" name="quantities[]" min="0.01" step="0.01" required>
+                            <input type="number" id="quantity-1" name="quantities[]" min="0.01" step="0.01" required class="ingredient-quantity">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="unit-1">Unité</label>
+                            <input type="text" id="unit-1" name="units[]" readonly class="ingredient-unit">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cost-1">Coût</label>
+                            <input type="text" id="cost-1" name="costs[]" readonly class="ingredient-cost">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="baker-percentage-1">% boulanger</label>
+                            <input type="text" id="baker-percentage-1" name="bakerPercentages[]" readonly class="baker-percentage">
                         </div>
                         
                         <div class="form-group ingredient-actions">
@@ -97,9 +131,16 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             ingredientRowCounter = 1;
-            productFormTitle.textContent = 'Ajouter un produit';
+            productFormTitle.textContent = 'Créer une recette';
             productForm.style.display = 'block';
+            
+            // Afficher l'onglet "Informations de base" par défaut
+            showTab('basic-info');
+            
             window.scrollTo({ top: productForm.offsetTop - 20, behavior: 'smooth' });
+            
+            // Initialiser les écouteurs d'événements pour les ingrédients
+            setupIngredientListeners();
         });
     }
     
@@ -115,30 +156,39 @@ document.addEventListener('DOMContentLoaded', function() {
         addIngredientRowBtn.addEventListener('click', function() {
             ingredientRowCounter++;
             
-            // Afficher le bouton de suppression sur toutes les lignes
-            document.querySelectorAll('.remove-ingredient').forEach(btn => {
-                btn.style.display = 'block';
-            });
-            
-            // Créer une nouvelle ligne
             const newRow = document.createElement('div');
             newRow.className = 'ingredient-row';
             newRow.innerHTML = `
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="ingredient-${ingredientRowCounter}">Ingrédient</label>
-                        <select id="ingredient-${ingredientRowCounter}" name="ingredients[]" required>
-                            <option value="" disabled selected>Sélectionner un ingrédient</option>
-                            <option value="1">Farine de blé</option>
-                            <option value="2">Sucre</option>
-                            <option value="3">Lait entier</option>
-                            <option value="4">Fraises</option>
+                        <label for="ingredient-${ingredientRowCounter}">Matière première</label>
+                        <select id="ingredient-${ingredientRowCounter}" name="ingredients[]" required class="ingredient-select">
+                            <option value="" disabled selected>Sélectionner une matière première</option>
+                            <option value="FAR001">Farine de blé T65</option>
+                            <option value="FAR002">Farine de tradition française</option>
+                            <option value="BEU001">Beurre AOP Charentes-Poitou</option>
+                            <option value="SUC001">Sucre cristal</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="quantity-${ingredientRowCounter}">Quantité</label>
-                        <input type="number" id="quantity-${ingredientRowCounter}" name="quantities[]" min="0.01" step="0.01" required>
+                        <input type="number" id="quantity-${ingredientRowCounter}" name="quantities[]" min="0.01" step="0.01" required class="ingredient-quantity">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="unit-${ingredientRowCounter}">Unité</label>
+                        <input type="text" id="unit-${ingredientRowCounter}" name="units[]" readonly class="ingredient-unit">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cost-${ingredientRowCounter}">Coût</label>
+                        <input type="text" id="cost-${ingredientRowCounter}" name="costs[]" readonly class="ingredient-cost">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="baker-percentage-${ingredientRowCounter}">% boulanger</label>
+                        <input type="text" id="baker-percentage-${ingredientRowCounter}" name="bakerPercentages[]" readonly class="baker-percentage">
                     </div>
                     
                     <div class="form-group ingredient-actions">
@@ -154,102 +204,205 @@ document.addEventListener('DOMContentLoaded', function() {
             
             ingredientsList.appendChild(newRow);
             
-            // Ajouter l'événement de suppression
-            newRow.querySelector('.remove-ingredient').addEventListener('click', function() {
-                newRow.remove();
+            // Activer le bouton de suppression pour les nouvelles lignes
+            const removeButtons = document.querySelectorAll('.remove-ingredient');
+            removeButtons.forEach(button => {
+                button.style.display = 'block';
+                button.addEventListener('click', function() {
+                    this.closest('.ingredient-row').remove();
+                    updateIngredientsSummary();
+                    
+                    // Si une seule ligne reste, cacher le bouton de suppression
+                    if (document.querySelectorAll('.ingredient-row').length === 1) {
+                        document.querySelector('.remove-ingredient').style.display = 'none';
+                    }
+                });
+            });
+            
+            // Ajouter des écouteurs d'événements pour les nouveaux champs
+            setupIngredientListeners();
+        });
+    }
+    
+    // Configurer les écouteurs d'événements pour les ingrédients
+    function setupIngredientListeners() {
+        // Écouter les changements sur les sélecteurs d'ingrédients
+        document.querySelectorAll('.ingredient-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const row = this.closest('.form-row');
+                const unitField = row.querySelector('.ingredient-unit');
+                const costField = row.querySelector('.ingredient-cost');
                 
-                // Si une seule ligne reste, cacher le bouton de suppression
-                if (document.querySelectorAll('.ingredient-row').length === 1) {
-                    document.querySelector('.remove-ingredient').style.display = 'none';
+                // Simuler la récupération des données de l'ingrédient
+                if (this.value) {
+                    // Dans une application réelle, ces valeurs viendraient d'une API ou d'une base de données
+                    const units = {
+                        'FAR001': 'kg',
+                        'FAR002': 'kg',
+                        'BEU001': 'g',
+                        'SUC001': 'kg'
+                    };
+                    
+                    const costs = {
+                        'FAR001': '0.85',
+                        'FAR002': '1.20',
+                        'BEU001': '0.012',
+                        'SUC001': '1.50'
+                    };
+                    
+                    unitField.value = units[this.value] || '';
+                    costField.value = costs[this.value] ? costs[this.value] + ' €' : '';
+                    
+                    // Mettre à jour les calculs
+                    updateIngredientsSummary();
                 }
+            });
+        });
+        
+        // Écouter les changements sur les champs de quantité
+        document.querySelectorAll('.ingredient-quantity').forEach(input => {
+            input.addEventListener('input', function() {
+                updateIngredientsSummary();
             });
         });
     }
     
-    // Ajouter des événements de suppression aux boutons existants
-    document.querySelectorAll('.remove-ingredient').forEach(button => {
-        button.addEventListener('click', function() {
-            const row = this.closest('.ingredient-row');
-            row.remove();
+    // Mettre à jour le résumé des ingrédients
+    function updateIngredientsSummary() {
+        let totalWeight = 0;
+        let totalCost = 0;
+        let potentialSavings = 0;
+        let flourWeight = 0; // Pour le calcul du pourcentage boulanger
+        
+        // Parcourir tous les ingrédients
+        document.querySelectorAll('.ingredient-row').forEach(row => {
+            const select = row.querySelector('.ingredient-select');
+            const quantity = parseFloat(row.querySelector('.ingredient-quantity').value) || 0;
+            const unit = row.querySelector('.ingredient-unit').value;
+            const costText = row.querySelector('.ingredient-cost').value;
             
-            // Si une seule ligne reste, cacher le bouton de suppression
-            if (document.querySelectorAll('.ingredient-row').length === 1) {
-                document.querySelector('.remove-ingredient').style.display = 'none';
-            }
-        });
-    });
-    
-    // Simuler l'édition d'un ingrédient
-    document.querySelectorAll('#ingredients-section .edit-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const id = row.cells[0].textContent;
-            const name = row.cells[1].textContent;
-            const category = row.cells[2].textContent;
-            const unit = row.cells[3].textContent;
-            const standardPrice = parseFloat(row.cells[4].textContent);
-            const memberPrice = row.cells[5].textContent !== '-' ? parseFloat(row.cells[5].textContent) : '';
-            const isSystem = row.cells[6].querySelector('.status-badge').classList.contains('status-active');
-            
-            // Remplir le formulaire
-            document.getElementById('ingredientId').value = id;
-            document.getElementById('ingredientName').value = name;
-            document.getElementById('ingredientStandardPrice').value = standardPrice;
-            if (memberPrice) {
-                document.getElementById('ingredientMemberPrice').value = memberPrice;
-            }
-            document.getElementById('ingredientIsSystem').checked = isSystem;
-            
-            // Sélectionner la catégorie
-            const categorySelect = document.getElementById('ingredientCategory');
-            for (let i = 0; i < categorySelect.options.length; i++) {
-                if (categorySelect.options[i].text === category) {
-                    categorySelect.selectedIndex = i;
-                    break;
+            // Calculer le poids total (si l'unité est en g ou kg)
+            if (unit === 'g') {
+                totalWeight += quantity;
+                
+                // Si c'est de la farine, ajouter au poids de farine pour le % boulanger
+                if (select.value && select.value.startsWith('FAR')) {
+                    flourWeight += quantity;
+                }
+            } else if (unit === 'kg') {
+                totalWeight += quantity * 1000;
+                
+                // Si c'est de la farine, ajouter au poids de farine pour le % boulanger
+                if (select.value && select.value.startsWith('FAR')) {
+                    flourWeight += quantity * 1000;
                 }
             }
             
-            // Sélectionner l'unité
-            const unitSelect = document.getElementById('ingredientUnit');
-            for (let i = 0; i < unitSelect.options.length; i++) {
-                if (unitSelect.options[i].text.startsWith(unit)) {
-                    unitSelect.selectedIndex = i;
-                    break;
-                }
+            // Calculer le coût total
+            if (costText) {
+                const cost = parseFloat(costText.replace(' €', '')) || 0;
+                totalCost += quantity * cost;
+                
+                // Simuler les économies potentielles (20% de réduction)
+                potentialSavings += quantity * cost * 0.2;
             }
-            
-            ingredientFormTitle.textContent = 'Modifier l\'ingrédient';
-            ingredientForm.style.display = 'block';
-            window.scrollTo({ top: ingredientForm.offsetTop - 20, behavior: 'smooth' });
         });
+        
+        // Mettre à jour l'affichage
+        document.getElementById('total-weight').textContent = totalWeight.toFixed(0) + ' g';
+        document.getElementById('ingredients-cost').textContent = totalCost.toFixed(2).replace('.', ',') + ' €';
+        document.getElementById('potential-savings').textContent = potentialSavings.toFixed(2).replace('.', ',') + ' €';
+        
+        // Calculer et mettre à jour les pourcentages boulanger
+        if (flourWeight > 0) {
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                const select = row.querySelector('.ingredient-select');
+                const quantity = parseFloat(row.querySelector('.ingredient-quantity').value) || 0;
+                const unit = row.querySelector('.ingredient-unit').value;
+                const bakerPercentageField = row.querySelector('.baker-percentage');
+                
+                let ingredientWeight = 0;
+                if (unit === 'g') {
+                    ingredientWeight = quantity;
+                } else if (unit === 'kg') {
+                    ingredientWeight = quantity * 1000;
+                }
+                
+                const bakerPercentage = (ingredientWeight / flourWeight) * 100;
+                bakerPercentageField.value = bakerPercentage.toFixed(1) + '%';
+            });
+        }
+        
+        // Mettre à jour les coûts dans l'onglet "Coûts et prix"
+        updateCostsSummary(totalCost);
+    }
+    
+    // Mettre à jour le résumé des coûts
+    function updateCostsSummary(ingredientsCost) {
+        const laborTime = parseFloat(document.getElementById('productLaborTime').value) || 0;
+        const laborCost = parseFloat(document.getElementById('productLaborCost').value) || 0;
+        const quantity = parseFloat(document.getElementById('productQuantity').value) || 1;
+        
+        // Calculer le coût de main d'œuvre
+        const totalLaborCost = (laborTime / 60) * laborCost;
+        
+        // Calculer le coût total par lot
+        const totalBatchCost = ingredientsCost + totalLaborCost;
+        
+        // Calculer le coût par pièce
+        const costPerPiece = totalBatchCost / quantity;
+        
+        // Mettre à jour l'affichage
+        document.getElementById('total-batch-cost').textContent = totalBatchCost.toFixed(2).replace('.', ',') + ' €';
+        document.getElementById('cost-per-piece').textContent = costPerPiece.toFixed(2).replace('.', ',') + ' €';
+        
+        // Calculer le prix de vente suggéré
+        updatePricing(costPerPiece);
+    }
+    
+    // Mettre à jour la tarification
+    function updatePricing(costPerPiece) {
+        const marginPercentage = parseFloat(document.getElementById('productMarginPercentage').value) || 0;
+        
+        // Calculer le prix de vente suggéré
+        const sellingPrice = costPerPiece * (1 + marginPercentage / 100);
+        document.getElementById('productSellingPrice').value = sellingPrice.toFixed(2);
+        
+        // Calculer la marge réelle si un prix de vente réel est spécifié
+        const actualPrice = parseFloat(document.getElementById('productActualPrice').value);
+        if (actualPrice) {
+            const actualMargin = ((actualPrice - costPerPiece) / costPerPiece) * 100;
+            document.getElementById('productActualMargin').value = actualMargin.toFixed(1) + '%';
+        }
+    }
+    
+    // Initialiser les écouteurs d'événements
+    setupIngredientListeners();
+    
+    // Écouter les changements sur les champs de coûts
+    document.getElementById('productLaborTime').addEventListener('input', function() {
+        const ingredientsCost = parseFloat(document.getElementById('ingredients-cost').textContent.replace(',', '.')) || 0;
+        updateCostsSummary(ingredientsCost);
     });
     
-    // Simuler l'édition d'un produit
-    document.querySelectorAll('#products-section .edit-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const id = row.cells[0].textContent;
-            const name = row.cells[1].textContent;
-            const description = row.cells[2].textContent;
-            const quantity = parseInt(row.cells[3].textContent);
-            const margin = parseInt(row.cells[6].textContent);
-            
-            // Remplir le formulaire
-            document.getElementById('productId').value = id;
-            document.getElementById('productName').value = name;
-            document.getElementById('productDescription').value = description;
-            document.getElementById('productQuantity').value = quantity;
-            document.getElementById('productMarginPercentage').value = margin;
-            
-            // Valeurs fictives pour les autres champs
-            document.getElementById('productLaborCost').value = '3.00';
-            document.getElementById('productEnergyCost').value = '1.50';
-            document.getElementById('productOtherCosts').value = '0.50';
-            
-            productFormTitle.textContent = 'Modifier le produit';
-            productForm.style.display = 'block';
-            window.scrollTo({ top: productForm.offsetTop - 20, behavior: 'smooth' });
-        });
+    document.getElementById('productLaborCost').addEventListener('input', function() {
+        const ingredientsCost = parseFloat(document.getElementById('ingredients-cost').textContent.replace(',', '.')) || 0;
+        updateCostsSummary(ingredientsCost);
+    });
+    
+    document.getElementById('productQuantity').addEventListener('input', function() {
+        const ingredientsCost = parseFloat(document.getElementById('ingredients-cost').textContent.replace(',', '.')) || 0;
+        updateCostsSummary(ingredientsCost);
+    });
+    
+    document.getElementById('productMarginPercentage').addEventListener('input', function() {
+        const costPerPiece = parseFloat(document.getElementById('cost-per-piece').textContent.replace(',', '.')) || 0;
+        updatePricing(costPerPiece);
+    });
+    
+    document.getElementById('productActualPrice').addEventListener('input', function() {
+        const costPerPiece = parseFloat(document.getElementById('cost-per-piece').textContent.replace(',', '.')) || 0;
+        updatePricing(costPerPiece);
     });
     
     // Afficher les détails du produit
@@ -284,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
     crudIngredientForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const isEditing = document.getElementById('ingredientId').value !== '';
-        alert(isEditing ? 'Ingrédient mis à jour avec succès!' : 'Ingrédient ajouté avec succès!');
+        alert(isEditing ? 'Matière première mise à jour avec succès!' : 'Matière première ajoutée avec succès!');
         ingredientForm.style.display = 'none';
     });
     
@@ -292,231 +445,32 @@ document.addEventListener('DOMContentLoaded', function() {
     crudProductForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const isEditing = document.getElementById('productId').value !== '';
-        alert(isEditing ? 'Produit mis à jour avec succès!' : 'Produit ajouté avec succès!');
+        alert(isEditing ? 'Recette mise à jour avec succès!' : 'Recette enregistrée avec succès!');
         productForm.style.display = 'none';
     });
-});
-
-// Configuration des modales
-function setupModals() {
-    // Récupération des éléments modaux
-    const deleteModal = document.getElementById('deleteModal');
-    const productDetailsModal = document.getElementById('productDetailsModal');
     
-    // Boutons pour ouvrir les modales
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    const viewButtons = document.querySelectorAll('.view-btn');
-    
-    // Boutons pour fermer les modales
-    const closeModalButtons = document.querySelectorAll('.close-modal');
-    const cancelDeleteButton = document.getElementById('cancelDelete');
-    const closeDetailsButton = document.querySelector('.close-details');
-    
-    // Gestionnaires d'événements pour les boutons de suppression
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            deleteModal.style.display = 'flex';
-        });
-    });
-    
-    // Gestionnaires d'événements pour les boutons de visualisation
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            productDetailsModal.style.display = 'flex';
-        });
-    });
-    
-    // Gestionnaires d'événements pour les boutons de fermeture
-    closeModalButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            deleteModal.style.display = 'none';
-            productDetailsModal.style.display = 'none';
-        });
-    });
-    
-    // Gestionnaire pour le bouton Annuler dans la modale de suppression
-    if (cancelDeleteButton) {
-        cancelDeleteButton.addEventListener('click', function() {
-            deleteModal.style.display = 'none';
+    // Bouton pour calculer le pourcentage boulanger
+    const calculateBakerPercentageBtn = document.getElementById('calculateBakerPercentage');
+    if (calculateBakerPercentageBtn) {
+        calculateBakerPercentageBtn.addEventListener('click', function() {
+            updateIngredientsSummary();
+            alert('Pourcentages boulanger calculés avec succès!');
         });
     }
     
-    // Gestionnaire pour le bouton Fermer dans la modale de détails
-    if (closeDetailsButton) {
-        closeDetailsButton.addEventListener('click', function() {
-            productDetailsModal.style.display = 'none';
-        });
-    }
-    
-    // Fermer les modales en cliquant à l'extérieur
-    window.addEventListener('click', function(event) {
-        if (event.target === deleteModal) {
-            deleteModal.style.display = 'none';
-        }
-        if (event.target === productDetailsModal) {
-            productDetailsModal.style.display = 'none';
-        }
-    });
-}
-
-// Configuration des formulaires
-function setupForms() {
-    // Boutons pour afficher/masquer les formulaires
-    const addIngredientBtn = document.getElementById('addIngredientBtn');
-    const cancelIngredientBtn = document.getElementById('cancelIngredientBtn');
-    const addProductBtn = document.getElementById('addProductBtn');
-    const cancelProductBtn = document.getElementById('cancelProductBtn');
-    
-    // Formulaires
-    const ingredientForm = document.getElementById('ingredientForm');
-    const productForm = document.getElementById('productForm');
-    
-    // Afficher le formulaire d'ingrédient
-    if (addIngredientBtn) {
-        addIngredientBtn.addEventListener('click', function() {
-            ingredientForm.style.display = 'block';
-            document.getElementById('ingredientFormTitle').textContent = 'Ajouter un ingrédient';
-            document.getElementById('crudIngredientForm').reset();
-        });
-    }
-    
-    // Masquer le formulaire d'ingrédient
-    if (cancelIngredientBtn) {
-        cancelIngredientBtn.addEventListener('click', function() {
-            ingredientForm.style.display = 'none';
-        });
-    }
-    
-    // Afficher le formulaire de produit
-    if (addProductBtn) {
-        addProductBtn.addEventListener('click', function() {
-            productForm.style.display = 'block';
-            document.getElementById('productFormTitle').textContent = 'Ajouter un produit';
-            document.getElementById('crudProductForm').reset();
-        });
-    }
-    
-    // Masquer le formulaire de produit
-    if (cancelProductBtn) {
-        cancelProductBtn.addEventListener('click', function() {
-            productForm.style.display = 'none';
-        });
-    }
-    
-    // Gestion des boutons d'édition
-    const editButtons = document.querySelectorAll('.edit-btn');
-    
-    editButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const isIngredient = row.closest('#ingredients-section') !== null;
-            
-            if (isIngredient) {
-                // Édition d'un ingrédient
-                ingredientForm.style.display = 'block';
-                document.getElementById('ingredientFormTitle').textContent = 'Modifier un ingrédient';
-                // Ici, vous pourriez remplir le formulaire avec les données de la ligne
-            } else {
-                // Édition d'un produit
-                productForm.style.display = 'block';
-                document.getElementById('productFormTitle').textContent = 'Modifier un produit';
-                // Ici, vous pourriez remplir le formulaire avec les données de la ligne
-            }
-        });
-    });
-}
-
-// Configuration des lignes d'ingrédients dans le formulaire de produit
-function setupIngredientRows() {
-    const addIngredientRowBtn = document.getElementById('addIngredientRowBtn');
-    const ingredientsList = document.getElementById('ingredientsList');
-    
-    if (addIngredientRowBtn && ingredientsList) {
-        let rowCount = 1;
-        
-        // Afficher le bouton de suppression pour la première ligne si nécessaire
-        const firstRemoveButton = document.querySelector('.remove-ingredient');
-        if (firstRemoveButton) {
-            firstRemoveButton.style.display = 'none';
-        }
-        
-        // Ajouter une nouvelle ligne d'ingrédient
-        addIngredientRowBtn.addEventListener('click', function() {
-            rowCount++;
-            
-            // Créer une nouvelle ligne
-            const newRow = document.createElement('div');
-            newRow.className = 'ingredient-row';
-            newRow.innerHTML = `
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ingredient-${rowCount}">Ingrédient</label>
-                        <select id="ingredient-${rowCount}" name="ingredients[]" required>
-                            <option value="" disabled selected>Sélectionner un ingrédient</option>
-                            <option value="1">Farine de blé</option>
-                            <option value="2">Sucre</option>
-                            <option value="3">Lait entier</option>
-                            <option value="4">Fraises</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="quantity-${rowCount}">Quantité</label>
-                        <input type="number" id="quantity-${rowCount}" name="quantities[]" min="0.01" step="0.01" required>
-                    </div>
-                    
-                    <div class="form-group ingredient-actions">
-                        <button type="button" class="button button--icon remove-ingredient">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            ingredientsList.appendChild(newRow);
-            
-            // Afficher tous les boutons de suppression si plus d'une ligne
-            if (rowCount > 1) {
-                const removeButtons = document.querySelectorAll('.remove-ingredient');
-                removeButtons.forEach(button => {
-                    button.style.display = 'block';
+    // Bouton pour ajuster les quantités
+    const scaleRecipeBtn = document.getElementById('scaleRecipe');
+    if (scaleRecipeBtn) {
+        scaleRecipeBtn.addEventListener('click', function() {
+            const scale = prompt('Entrez le facteur d\'échelle (ex: 2 pour doubler, 0.5 pour réduire de moitié):', '1');
+            if (scale && !isNaN(scale)) {
+                const factor = parseFloat(scale);
+                document.querySelectorAll('.ingredient-quantity').forEach(input => {
+                    const currentValue = parseFloat(input.value) || 0;
+                    input.value = (currentValue * factor).toFixed(2);
                 });
+                updateIngredientsSummary();
             }
-            
-            // Ajouter un gestionnaire d'événements pour le nouveau bouton de suppression
-            const newRemoveButton = newRow.querySelector('.remove-ingredient');
-            newRemoveButton.addEventListener('click', function() {
-                newRow.remove();
-                rowCount--;
-                
-                // Masquer le bouton de suppression de la première ligne s'il n'y a qu'une ligne
-                if (rowCount === 1) {
-                    const firstRemoveButton = document.querySelector('.remove-ingredient');
-                    if (firstRemoveButton) {
-                        firstRemoveButton.style.display = 'none';
-                    }
-                }
-            });
-        });
-        
-        // Ajouter des gestionnaires d'événements pour les boutons de suppression existants
-        const removeButtons = document.querySelectorAll('.remove-ingredient');
-        removeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                this.closest('.ingredient-row').remove();
-                rowCount--;
-                
-                // Masquer le bouton de suppression de la première ligne s'il n'y a qu'une ligne
-                if (rowCount === 1) {
-                    const firstRemoveButton = document.querySelector('.remove-ingredient');
-                    if (firstRemoveButton) {
-                        firstRemoveButton.style.display = 'none';
-                    }
-                }
-            });
         });
     }
-} 
+}); 

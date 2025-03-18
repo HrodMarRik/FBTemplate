@@ -353,14 +353,38 @@
             <!-- Formulaire d'ajout/modification de produit -->
             <div class="card form-card" id="productForm" style="display: none;">
                 <h2 id="productFormTitle">Créer une recette</h2>
+                
+                <!-- Navigation par onglets -->
+                <div class="tabs-navigation">
+                    <button type="button" class="tab-btn active" data-tab="basic-info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Informations de base
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="ingredients-tab">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 2v7c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V2"></path>
+                            <path d="M7 2v20"></path>
+                            <path d="M17 2v20"></path>
+                            <path d="M3 12h18"></path>
+                            <path d="M3 17h18"></path>
+                            <path d="M3 22h18"></path>
+                        </svg>
+                        Ingrédients
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="costs-tab">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        Coûts et prix
+                    </button>
+                </div>
+                
                 <form id="crudProductForm">
                     <input type="hidden" id="productId" name="productId">
-                    
-                    <div class="form-tabs">
-                        <button type="button" class="tab-btn active" data-tab="basic-info">Informations de base</button>
-                        <button type="button" class="tab-btn" data-tab="ingredients-tab">Ingrédients</button>
-                        <button type="button" class="tab-btn" data-tab="costs-tab">Coûts et prix</button>
-                    </div>
                     
                     <div class="tab-content" id="basic-info">
                         <div class="form-row">
@@ -422,6 +446,67 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <div class="ingredient-categories">
+                            <button type="button" class="category-btn active" data-category="all">Tous</button>
+                            <button type="button" class="category-btn" data-category="flour">Farines</button>
+                            <button type="button" class="category-btn" data-category="dairy">Produits laitiers</button>
+                            <button type="button" class="category-btn" data-category="essential">Essentiels</button>
+                        </div>
+                        
+                        <div id="ingredientsList">
+                            <div class="ingredient-row">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ingredient-1">Matière première</label>
+                                        <select id="ingredient-1" name="ingredients[]" required class="ingredient-select">
+                                            <option value="" disabled selected>Sélectionner une matière première</option>
+                                            <option value="FAR001">Farine de blé T65</option>
+                                            <option value="FAR002">Farine de tradition française</option>
+                                            <option value="BEU001">Beurre AOP Charentes-Poitou</option>
+                                            <option value="SUC001">Sucre cristal</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="quantity-1">Quantité</label>
+                                        <input type="number" id="quantity-1" name="quantities[]" min="0.01" step="0.01" required class="ingredient-quantity">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="unit-1">Unité</label>
+                                        <input type="text" id="unit-1" name="units[]" readonly class="ingredient-unit">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="cost-1">Coût</label>
+                                        <input type="text" id="cost-1" name="costs[]" readonly class="ingredient-cost">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="baker-percentage-1">% boulanger</label>
+                                        <input type="text" id="baker-percentage-1" name="bakerPercentages[]" readonly class="baker-percentage">
+                                    </div>
+                                    
+                                    <div class="form-group ingredient-actions">
+                                        <button type="button" class="button button--icon remove-ingredient" style="display: none;">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="addIngredientRowBtn" class="button button--white">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Ajouter un ingrédient
+                        </button>
                         
                         <div class="ingredients-summary">
                             <div class="summary-item">
